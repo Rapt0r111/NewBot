@@ -10,38 +10,25 @@ from utils.db_api.get_clothe import get_clothes_type, get_brand, get_print, get_
 class NumbersCallbackFactory(CallbackData, prefix="fab"):
     action: str
     value: Optional[int]
-    type: Optional[int]
-    brand: Optional[int]
-    c_print: Optional[str]
-    c_color: Optional[str]
 
 
 async def async_get_inline_keyboard_fab(array: dict,
                                         adjust: int,
                                         action: str,
-                                        info: dict,
                                         get_back: str = None,
+                                        back_id: int = None,
                                         ) -> types.InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    print(array)
     for key, value in array.items():
         builder.button(text=value,
                        callback_data=NumbersCallbackFactory(
                            action=action,
-                           value=key,
-                           type=info['c_type'] if 'c_type' in info else None,
-                           brand=info['brand'] if 'brand' in info else None,
-                           c_print=info['c_print'] if 'c_print' in info else None,
-                           c_color=info['c_color'] if 'c_color' in info else None))
+                           value=key,))
     if get_back:
         builder.button(text="⬅️ Назад",
                        callback_data=NumbersCallbackFactory(
                             action=get_back,
-                            value=None,
-                            type=info['c_type'] if 'c_type' in info else None,
-                            brand=info['brand'] if 'brand' in info else None,
-                            c_print=info['c_print'] if 'c_print' in info else None,
-                            c_color=info['c_color'] if 'c_color' in info else None))
+                            value=back_id))
     # Выравниваем кнопки по 2 в ряд
     builder.adjust(adjust)
     return builder.as_markup()
@@ -76,24 +63,21 @@ def back() -> types.ReplyKeyboardMarkup:
 
 async def catalog() -> types.InlineKeyboardMarkup:  # Каталог типов одежды
     options = await get_clothes_type()  # Получаем все типы одежды
-    return await async_get_inline_keyboard_fab(options, adjust=1, action="type", info={})
+    return await async_get_inline_keyboard_fab(options, adjust=1, action="type")
 
 
 async def brand(clothe_type: int) -> types.InlineKeyboardMarkup:  # Бренды одежды
     options = await get_brand(clothe_type)
     return await async_get_inline_keyboard_fab(options,
                                                adjust=1, action="brand",
-                                               get_back="catalog",
-                                               info={"type": clothe_type})
+                                               get_back="catalog",back_id=clothe_type)
 
 
-async def clothes_print(clothe_brand: int, brandik: int) -> types.InlineKeyboardMarkup:  # Принты одежды
+async def clothes_print(clothe_brand: int) -> types.InlineKeyboardMarkup:  # Принты одежды
     options = await get_print(clothe_brand)
-    print(f'clothe_brand: {clothe_brand}')
     return await async_get_inline_keyboard_fab(options,
                                                adjust=1, action="clothes_print",
-                                               get_back="type",
-                                               info={"brand": brandik})
+                                               get_back="type", back_id=clothe_brand)
 
 
 async def clothes_color(clothe_print: int) \
@@ -101,17 +85,23 @@ async def clothes_color(clothe_print: int) \
     options = await get_color(clothe_print)
     return await async_get_inline_keyboard_fab(options,
                                                adjust=1, action="clothes_color",
-                                               get_back="brand",
-                                               info={"c_print": clothe_print,})
+                                               get_back="brand",back_id=clothe_print)
 
 
 async def clothes_size(clothe_color: int) \
         -> types.InlineKeyboardMarkup:  # Цвет одежды
     options = await get_size(clothe_color)
     return await async_get_inline_keyboard_fab(options,
-                                               adjust=1, action="clothes_color",
-                                               get_back="clothes_print",
-                                               info={"c_color": clothe_color})
+                                               adjust=1, action="clothing",
+                                               get_back="clothes_print", back_id=clothe_color)
+
+
+async def back_from_catalog(clothe_size: int) \
+        -> types.InlineKeyboardMarkup:  # Цвет одежды
+    options = {}
+    return await async_get_inline_keyboard_fab(options,
+                                               adjust=1, action="clothing",
+                                               get_back="clothes_color", back_id=clothe_size)
 
 
 def contact_keyboard() -> types.ReplyKeyboardMarkup:

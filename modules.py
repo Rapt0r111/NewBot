@@ -11,7 +11,7 @@ from aiogram.fsm.context import FSMContext
 # #from aiogram.contrib.fsm_storage.mongo import MongoStorage
 
 from settings import config
-from utils.keyboards import clothes_print, clothes_color, clothes_size
+from utils.keyboards import clothes_print, clothes_color, clothes_size, back_from_catalog
 from utils.middlewares import tech_works
 
 from utils import keyboards
@@ -30,3 +30,4 @@ BRAND = keyboards.brand
 CLOTHE_PRINT = clothes_print
 CLOTHE_COLOR = clothes_color
 CLOTHE_SIZE = clothes_size
+BACK_FROM_CATALOG = back_from_catalog
